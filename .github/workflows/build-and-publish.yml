@@ -1,0 +1,45 @@
+﻿name: Build and Publish NuGet Packages
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    env:
+      Major: '1'
+      Minor: '0'
+      # Use GitHub's run_number as a replacement for Azure's counter
+      Version: '1.0.${{ github.run_number }}'
+    
+    steps:
+    - uses: actions/checkout@v3
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+      
+    - name: Test
+      run: dotnet test "**/Test/*.csproj" --configuration Release --no-restore
+      
+    - name: Pack BDD
+      run: dotnet pack BDD/BDD.csproj --configuration Release --no-restore --output nuget-packages /p:Version=${{ env.Version }}
+      
+    - name: Pack Compatibility
+      run: dotnet pack Compatibility/Compatibility.csproj --configuration Release --no-restore --output nuget-packages /p:Version=${{ env.Version }}
+      
+    - name: Push to GitHub Packages
+      # For pushing to GitHub Packages, we need to use GitHub token
+      run: |
+        dotnet nuget push nuget-packages/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }} --skip-duplicate
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
