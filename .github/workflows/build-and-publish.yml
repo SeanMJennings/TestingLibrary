@@ -11,7 +11,6 @@ jobs:
     env:
       Major: '1'
       Minor: '0'
-      # Use GitHub's run_number as a replacement for Azure's counter
       Version: '1.0.${{ github.run_number }}'
     
     steps:
@@ -29,7 +28,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
       
     - name: Test
-      run: dotnet test "**/Test/*.csproj" --configuration Release --no-restore
+      run: dotnet test Testing.sln --configuration Release --no-restore
       
     - name: Pack BDD
       run: dotnet pack BDD/BDD.csproj --configuration Release --no-restore --output nuget-packages /p:Version=${{ env.Version }}
@@ -38,7 +37,6 @@ jobs:
       run: dotnet pack Compatibility/Compatibility.csproj --configuration Release --no-restore --output nuget-packages /p:Version=${{ env.Version }}
       
     - name: Push to GitHub Packages
-      # For pushing to GitHub Packages, we need to use GitHub token
       run: |
         dotnet nuget push nuget-packages/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }} --skip-duplicate
       env:
