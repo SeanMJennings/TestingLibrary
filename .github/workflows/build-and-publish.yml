@@ -2,7 +2,8 @@
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
 permissions:
   packages: write
   contents: read
@@ -10,37 +11,34 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     env:
       Major: '1'
       Minor: '0'
-      Version: '1.0.${{ github.run_number }}'
-    
+      Version: '${{ github.run_number }}'
+
     steps:
-    - uses: actions/checkout@v3
-      
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '9.0.x'
-        
-    - name: Restore dependencies
-      run: dotnet restore
-      
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
-      
-    - name: Test
-      run: dotnet test Testing.sln --configuration Release --no-restore
-      
-    - name: Pack BDD
-      run: dotnet pack BDD/BDD.csproj --configuration Release --no-restore --output nuget-packages /p:Version=${{ env.Version }}
-      
-    - name: Pack Compatibility
-      run: dotnet pack Compatibility/Compatibility.csproj --configuration Release --no-restore --output nuget-packages /p:Version=${{ env.Version }}
-      
-    - name: Push to GitHub Packages
-      run: |
-        dotnet nuget push nuget-packages/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }} --skip-duplicate
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+          source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ github.token }}
+
+      - name: Restore dependencies
+        run: dotnet restore --no-cache --force-evaluate
+
+      - name: Build solution
+        run: dotnet build Testing.sln --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test Testing.sln --configuration Release --no-build --no-restore
+
+      - name: Pack NuGet packages
+        run: dotnet pack Testing.sln --configuration Release --no-build --output ./packages /p:Version=${{ env.Major }}.${{ env.Minor }}.${{ env.Version }}
+
+      - name: Push NuGet packages
+        run: dotnet nuget push "packages/*.nupkg" --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --api-key ${{ github.token }} --skip-duplicate
