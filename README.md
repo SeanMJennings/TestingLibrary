@@ -1,6 +1,6 @@
 # testing
 
-Dotnet packages to aid testing in a behavioural-driven development (BDD) style.
+Behavioural-driven development (BDD) libraries for dotnet.
 
 ```
     [Test]
