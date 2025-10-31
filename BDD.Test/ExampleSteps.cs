@@ -11,13 +11,14 @@ public partial class ExampleShould
     private int first_number;
     private int second_number;
 
-    protected override void before_each()
+    protected override Task before_each()
     {
         base.before_each();
         sum = 0;
         first_number = 0;
         second_number = 0;
         complex_system = new ComplexSystem(new MagicDependency());
+        return Task.CompletedTask;
     }
 
     private void two_numbers()
