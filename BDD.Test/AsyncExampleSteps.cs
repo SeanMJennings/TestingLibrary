@@ -1,6 +1,6 @@
 ﻿namespace BDD.Test;
 
-public partial class ExampleShould
+public partial class AsyncExampleShould
 {
     private int sum;
     private ComplexSystem complex_system;
@@ -11,19 +11,27 @@ public partial class ExampleShould
     private int first_number;
     private int second_number;
 
-    protected override void before_each()
+    protected override Task before_each()
     {
         base.before_each();
         sum = 0;
         first_number = 0;
         second_number = 0;
         complex_system = new ComplexSystem(new MagicDependency());
+        return Task.CompletedTask;
     }
 
     private void two_numbers()
     {
         first_number = a;
         second_number = b;
+    }
+    
+    private Task two_numbers_from_a_remote_source()
+    {
+        first_number = 0;
+        second_number = 2;
+        return Task.CompletedTask;
     }
 
     private static void something_else_we_care_about_setting_up(){}
@@ -47,6 +55,12 @@ public partial class ExampleShould
     private void we_get_the_sum()
     {
         sum = first_number + second_number;
+    }    
+    
+    private Task we_get_the_sum_from_a_remote_source()
+    {
+        sum = first_number + second_number;
+        return Task.CompletedTask;
     }
     
     private static void we_can_validate_something_else(){}
