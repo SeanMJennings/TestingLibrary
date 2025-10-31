@@ -26,6 +26,13 @@ public partial class ExampleShould
         first_number = a;
         second_number = b;
     }
+    
+    private Task two_numbers_from_a_remote_source()
+    {
+        first_number = 0;
+        second_number = 2;
+        return Task.CompletedTask;
+    }
 
     private static void something_else_we_care_about_setting_up(){}
 
@@ -48,6 +55,12 @@ public partial class ExampleShould
     private void we_get_the_sum()
     {
         sum = first_number + second_number;
+    }    
+    
+    private Task we_get_the_sum_from_a_remote_source()
+    {
+        sum = first_number + second_number;
+        return Task.CompletedTask;
     }
     
     private static void we_can_validate_something_else(){}
